@@ -1,0 +1,36 @@
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Env / secrets
+.env
+.env.*
+*.key
+*.pem
+credentials.json
+service-account*.json
+
+# Source data (Single Source of Truth = Google Sheet)
+*.xlsx
+*.xls
+*.csv
+SCT_Dashboard.xlsx
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# Logs / temp
+*.log
+*.tmp
+.cache/

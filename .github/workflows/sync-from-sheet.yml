@@ -1,0 +1,49 @@
+name: Sync from Master Sheet (realtime)
+
+on:
+  repository_dispatch:
+    types: [sync_from_sheet]
+  workflow_dispatch: # manual trigger from GitHub UI
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Download sync.py
+        run: |
+          curl -fsSL -o /tmp/sync.py \
+            https://raw.githubusercontent.com/${{ github.repository_owner }}/sct-dashboard/main/sync.py
+          ls -la /tmp/sync.py
+
+      - name: Apply payload to index.html
+        env:
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_EVENT_PATH: ${{ github.event_path }}
+        run: python3 /tmp/sync.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "CFO Ava (realtime)"
+          git config user.email "ava-bot@srichonlathorn.local"
+          if git diff --quiet; then
+            echo "No changes — skipping commit"
+            exit 0
+          fi
+          ts="${{ github.event.client_payload.timestamp }}"
+          reason="${{ github.event.client_payload.trigger_reason }}"
+          git add index.html
+          git commit -m "chore: realtime sync ${ts} (trigger: ${reason}) · CFO Ava"
+          git push origin HEAD
